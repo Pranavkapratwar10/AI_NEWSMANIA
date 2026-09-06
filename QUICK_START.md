@@ -1,4 +1,5 @@
 # 🚀 Quick Start - Deploy to Render NOW!
+live link: https://ai-newsmania1.onrender.com/
 
 ## ⚡ Fast Track Deployment (5 Minutes)
 
