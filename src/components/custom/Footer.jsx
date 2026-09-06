@@ -216,11 +216,11 @@ export default function Footer() {
             <motion.ul variants={itemVariants} className="space-y-4">
               <li className="flex items-start group">
                 <Mail className="w-5 h-5 text-primary mt-1 mr-3 flex-shrink-0 group-hover:text-accent transition-colors" />
-                <span className="text-gray-400 group-hover:text-white transition-colors">pranavkapratwar106@gmail.com</span>
+                <span className="text-gray-400 group-hover:text-white transition-colors">yashmhasekar.hackathons@gmail.com</span>
               </li>
               <li className="flex items-start group">
                 <Phone className="w-5 h-5 text-primary mt-1 mr-3 flex-shrink-0 group-hover:text-accent transition-colors" />
-                <span className="text-gray-400 group-hover:text-white transition-colors">+91 8262820855</span>
+                <span className="text-gray-400 group-hover:text-white transition-colors">+91 88066 87900</span>
               </li>
               <li className="flex items-start group">
                 <MapPin className="w-5 h-5 text-primary mt-1 mr-3 flex-shrink-0 group-hover:text-accent transition-colors" />
