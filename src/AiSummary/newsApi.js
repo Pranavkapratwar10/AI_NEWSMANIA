@@ -133,29 +133,9 @@ export const fetchNews = async (query, lang = 'en') => {
     const normalizedLang = (lang || 'en').toString().split('-')[0];
     console.log(`Fetching news for query: "${query}" with language: ${lang} (normalized: ${normalizedLang})`);
     
-    // Check if we're in development or production environment
-    const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    
-    let url;
-    let useProxy = !isDevelopment;
-    
-    if (useProxy) {
-      // If deployed (not localhost), use an alternative method to avoid CORS
-      // Option 1: Use a CORS proxy service
-      // url = `https://corsproxy.io/?${encodeURIComponent(`${BASE_URL}${encodeURIComponent(query)}&apiKey=${API_KEY}&language=${normalizedLang}`)}`;
-      
-      // Option 2: Use your own deployed proxy server
-      // url = `https://your-proxy-server.com/api/news?query=${encodeURIComponent(query)}&lang=${normalizedLang}`;
-      
-      // Option 3: Use a public news API alternative that allows CORS from any origin
-      url = `https://api.worldnewsapi.com/search-news?text=${encodeURIComponent(query)}&language=${normalizedLang}&api-key=a24f3de0-7d28-48a5-83ae-ba3fe7c8cdae`;
-      
-      console.log(`Using proxy URL: ${url}`);
-    } else {
-      // Use direct NewsAPI for localhost development
-      url = `${BASE_URL}${encodeURIComponent(query)}&apiKey=${API_KEY}&language=${normalizedLang}`;
-      console.log(`Making direct request to: ${url.replace(API_KEY, 'API_KEY_HIDDEN')}`);
-    }
+    // Use NewsAPI.org for all requests (development and production)
+    const url = `${BASE_URL}${encodeURIComponent(query)}&apiKey=${API_KEY}&language=${normalizedLang}`;
+    console.log(`Making request to: ${url.replace(API_KEY, 'API_KEY_HIDDEN')}`);
     
     const response = await fetch(url);
 
@@ -180,17 +160,11 @@ export const fetchNews = async (query, lang = 'en') => {
     let data = await response.json();
 
     // If no articles were returned for the normalized language, retry once with 'en' (fallback)
-    const initialCount = (data.articles && data.articles.length) || (data.news && data.news.length) || 0;
+    const initialCount = (data.articles && data.articles.length) || 0;
     if (initialCount === 0 && normalizedLang !== 'en') {
       console.warn(`No articles found for language "${normalizedLang}". Retrying with language "en".`);
-      let retryUrl;
-      if (useProxy) {
-        retryUrl = `https://api.worldnewsapi.com/search-news?text=${encodeURIComponent(query)}&language=en&api-key=a24f3de0-7d28-48a5-83ae-ba3fe7c8cdae`;
-        console.log(`Retrying using proxy URL: ${retryUrl}`);
-      } else {
-        retryUrl = `${BASE_URL}${encodeURIComponent(query)}&apiKey=${API_KEY}&language=en`;
-        console.log(`Retrying direct request to: ${retryUrl.replace(API_KEY, 'API_KEY_HIDDEN')}`);
-      }
+      const retryUrl = `${BASE_URL}${encodeURIComponent(query)}&apiKey=${API_KEY}&language=en`;
+      console.log(`Retrying request to: ${retryUrl.replace(API_KEY, 'API_KEY_HIDDEN')}`);
 
       const retryResp = await fetch(retryUrl);
       if (!retryResp.ok) {
@@ -202,31 +176,14 @@ export const fetchNews = async (query, lang = 'en') => {
     }
     
     // Log the response to help with debugging
-    console.log(`API returned ${data.articles?.length || data.news?.length || 0} articles`);
+    console.log(`API returned ${data.articles?.length || 0} articles`);
     
     if (data.status === 'error') {
       throw new Error(`NewsAPI error: ${data.message || 'Unknown API error'}`);
     }
     
-    let articles = [];
-    
-    // Handle response from different API formats
-    if (useProxy && data.news) {
-      // Handle WorldNewsAPI format which differs from NewsAPI
-      articles = data.news.map(item => ({
-        source: { name: item.source || 'Unknown Source' },
-        author: item.author || 'Unknown Author',
-        title: item.title,
-        description: item.text?.substring(0, 200) || item.title,
-        url: item.url,
-        urlToImage: item.image,
-        publishedAt: item.publish_date || new Date().toISOString(),
-        content: item.text
-      }));
-    } else {
-      // Standard NewsAPI format
-      articles = data.articles || [];
-    }
+    // Standard NewsAPI format
+    const articles = data.articles || [];
     
     if (!articles || articles.length === 0) {
       console.warn(`No articles found for query: "${query}"`);
