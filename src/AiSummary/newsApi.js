@@ -1,7 +1,7 @@
 const API_KEY = "4d9ec4d7869a4862a82dabc81cf0e00c"
 const BASE_URL = "https://newsapi.org/v2/everything?q=";
-// Backend proxy URL - will be set via environment variable
-const PROXY_URL = import.meta.env.VITE_API_PROXY_URL || 'https://ai-newsmania-api.onrender.com/api/news/fetch';
+// Backend proxy URL - hardcoded for production
+const PROXY_URL = 'https://ai-newsmania-api.onrender.com/api/news/fetch';
 
 // Define trusted sources with their priority levels (1 being highest)
 const TRUSTED_SOURCES = {
