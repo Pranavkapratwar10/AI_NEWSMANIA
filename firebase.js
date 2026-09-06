@@ -3,7 +3,9 @@ import { initializeApp, getApps } from "firebase/app";
 import { getAuth, GoogleAuthProvider, GithubAuthProvider } from "firebase/auth";
 import {
   getFirestore,
-  enableIndexedDbPersistence,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
   CACHE_SIZE_UNLIMITED,
   connectFirestoreEmulator,
 } from "firebase/firestore";
@@ -24,25 +26,19 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
-const db = getFirestore(app);
+
+// Initialize Firestore with modern cache settings (replaces enableIndexedDbPersistence)
+const db = !getApps().length 
+  ? initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager()
+      })
+    })
+  : getFirestore(app);
+
 const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 const githubProvider = new GithubAuthProvider();
-
-// Enable offline persistence
-enableIndexedDbPersistence(db, {
-  cacheSizeBytes: CACHE_SIZE_UNLIMITED,
-}).catch((err) => {
-  if (err.code === "failed-precondition") {
-    // Multiple tabs open, persistence can only be enabled in one tab at a time
-    console.warn("Firestore persistence failed: Multiple tabs open");
-  } else if (err.code === "unimplemented") {
-    // The current browser does not support all of the features required for persistence
-    console.warn("Firestore persistence not supported by this browser");
-  } else {
-    console.error("Firestore persistence error:", err);
-  }
-});
 
 // Add network status monitoring
 let isOnline = true;
