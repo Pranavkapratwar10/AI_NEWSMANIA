@@ -1,5 +1,7 @@
 const API_KEY = "4d9ec4d7869a4862a82dabc81cf0e00c"
 const BASE_URL = "https://newsapi.org/v2/everything?q=";
+// Backend proxy URL - will be set via environment variable
+const PROXY_URL = import.meta.env.VITE_API_PROXY_URL || 'https://ai-newsmania-api.onrender.com/api/news/fetch';
 
 // Define trusted sources with their priority levels (1 being highest)
 const TRUSTED_SOURCES = {
@@ -133,9 +135,19 @@ export const fetchNews = async (query, lang = 'en') => {
     const normalizedLang = (lang || 'en').toString().split('-')[0];
     console.log(`Fetching news for query: "${query}" with language: ${lang} (normalized: ${normalizedLang})`);
     
-    // Use NewsAPI.org for all requests (development and production)
-    const url = `${BASE_URL}${encodeURIComponent(query)}&apiKey=${API_KEY}&language=${normalizedLang}`;
-    console.log(`Making request to: ${url.replace(API_KEY, 'API_KEY_HIDDEN')}`);
+    // Check if we're running on localhost
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    
+    let url;
+    if (isLocalhost) {
+      // Use direct NewsAPI for localhost development
+      url = `${BASE_URL}${encodeURIComponent(query)}&apiKey=${API_KEY}&language=${normalizedLang}`;
+      console.log(`Making direct request to: ${url.replace(API_KEY, 'API_KEY_HIDDEN')}`);
+    } else {
+      // Use backend proxy for production
+      url = `${PROXY_URL}?query=${encodeURIComponent(query)}&language=${normalizedLang}`;
+      console.log(`Making proxied request to: ${url}`);
+    }
     
     const response = await fetch(url);
 
@@ -163,8 +175,15 @@ export const fetchNews = async (query, lang = 'en') => {
     const initialCount = (data.articles && data.articles.length) || 0;
     if (initialCount === 0 && normalizedLang !== 'en') {
       console.warn(`No articles found for language "${normalizedLang}". Retrying with language "en".`);
-      const retryUrl = `${BASE_URL}${encodeURIComponent(query)}&apiKey=${API_KEY}&language=en`;
-      console.log(`Retrying request to: ${retryUrl.replace(API_KEY, 'API_KEY_HIDDEN')}`);
+      
+      let retryUrl;
+      if (isLocalhost) {
+        retryUrl = `${BASE_URL}${encodeURIComponent(query)}&apiKey=${API_KEY}&language=en`;
+        console.log(`Retrying direct request to: ${retryUrl.replace(API_KEY, 'API_KEY_HIDDEN')}`);
+      } else {
+        retryUrl = `${PROXY_URL}?query=${encodeURIComponent(query)}&language=en`;
+        console.log(`Retrying proxied request to: ${retryUrl}`);
+      }
 
       const retryResp = await fetch(retryUrl);
       if (!retryResp.ok) {

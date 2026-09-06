@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: ai-newsmania-api
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NEWS_API_KEY
+        value: 4d9ec4d7869a4862a82dabc81cf0e00c
+      - key: CLIENT_URL
+        value: https://ai-newsmania1.onrender.com
