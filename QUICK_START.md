@@ -119,7 +119,7 @@ git push
 ## 📱 Share Your Live App:
 
 ```
-https://newsmania.onrender.com
+[https://newsmania.onrender.com](https://ai-newsmania1.onrender.com/)
 ```
 
 Tweet it, share it, add to portfolio! 🚀
