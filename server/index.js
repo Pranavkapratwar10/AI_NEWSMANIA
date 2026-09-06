@@ -17,13 +17,9 @@ app.use(express.json());
 
 // Import routes
 const newsProxyRouter = require('./routes/newsProxy');
-const authRouter = require('./routes/auth');
-const commentsRouter = require('./routes/comments');
 
 // Routes
 app.use('/api/news', newsProxyRouter);
-app.use('/api/auth', authRouter);
-app.use('/api/comments', commentsRouter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
